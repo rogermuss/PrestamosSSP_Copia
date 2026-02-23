@@ -1,0 +1,68 @@
+// --- START OF export default function MaterialCard({material} : MaterialCardProps) {
+  const categoryName = getCategorySlug(material.categoryId)
+  const imagePath = `/category-icons/${categoryName}.svg`
+
+  return (
+    <div className="border bg-white flex flex-col">
+        <div className="flex justify-center items-center h-72 p-4">
+          <div className="relative w-32 h-32">
+            <Image
+                fill
+                src={imagePath}
+                alt={`${material.name} - ${categoryName.replace('-', ' ')}`}
+                className="opacity-80"
+                sizes="(max-width: 128px) 100vw, 128px"
+                style={{ objectFit: 'contain' }}x ---
+
+import { getCategorySlug } from "@/src/utils"
+import { Material } from "@prisma/client"
+import Image from "next/image"
+import AddMaterialButton from "./AddMaterialButton"
+
+// Asegurarse de que Material incluye totalStock
+type MaterialWithTotal = Material & {
+  totalStock: number;
+}
+
+type MaterialCardProps = {
+    material: MaterialWithTotal
+}
+
+export default function MaterialCard({material} : MaterialCardProps) {
+  // Usar directamente el icono de la categoría
+  const categoryName = getCategorySlug(material.categoryId)
+  const imagePath = `/category-icons/${categoryName}.svg`
+
+  return (
+    <div className="border bg-white flex flex-col">
+        <div className="relative w-full h-72">
+                    <Image
+              width={120}
+              height={120}
+              src={imagePath}
+              alt={`${material.name} - ${categoryName.replace('-', ' ')}`}
+              className="p-4 opacity-80 mx-auto"
+              style={{
+                width: 'auto',
+                height: 'auto',
+                maxWidth: '100%',
+                maxHeight: '100%'
+              }}
+          />
+        </div>
+
+        <div className="p-5 flex flex-col flex-grow">
+            <h3 className="text-2xl font-bold">{material.name}</h3>
+            {/* Mostrar stock disponible y total */}
+            <p className="mt-5 font-black text-2xl text-amber-500">
+              Disponibles: { material.stock }/{ material.totalStock }
+            </p>
+            <div className="mt-auto">
+              <AddMaterialButton 
+                material={material}
+              />
+            </div>
+        </div>
+    </div>
+  )
+}

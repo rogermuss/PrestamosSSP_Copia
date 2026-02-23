@@ -1,0 +1,81 @@
+// archivo: prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider          = "mysql"
+  url               = env("DATABASE_URL")
+  shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
+}
+
+// Modelo de Usuario para simular login con cuenta universitaria
+model User {
+  id        Int        @id @default(autoincrement())
+  email     String     @unique // Email universitario
+  name      String     // Nombre completo del usuario
+  createdAt DateTime   @default(now())
+  
+  // Relación con las solicitudes realizadas por el usuario
+  requests  MaterialRequest[]
+}
+
+// El modelo Category sigue siendo útil, sin cambios estructurales.
+model Category {
+  id        Int        @id @default(autoincrement())
+  name      String
+  slug      String
+  materials Material[] // Renombrado de 'products' a 'materials'
+}
+
+// 'Order' se convierte en 'MaterialRequest' para mayor claridad.
+model MaterialRequest {
+  id                  Int                 @id @default(autoincrement())
+  requesterName       String              // Renombrado de 'name' a 'requesterName'
+  userId              Int                 // ID del usuario que realizó la solicitud
+  totalItems          Int                 // Renombrado de 'total' a 'totalItems'
+  requestedAt         DateTime            @default(now()) // Renombrado de 'date'
+  isCompleted         Boolean             @default(false) // Renombrado de 'status'
+  completedAt         DateTime?           // Renombrado de 'orderReadyAt'
+  
+  // Relación con el usuario que realizó la solicitud
+  user                User                @relation(fields: [userId], references: [id])
+  
+  // Relación con los productos/materiales de la solicitud
+  requestedProducts   RequestProduct[]
+  
+  @@index([userId])
+}
+
+// 'OrderProduct' se convierte en 'RequestProduct'
+model RequestProduct {
+  id         Int      @id @default(autoincrement())
+  requestId  Int
+  materialId Int
+  quantity   Int
+
+  request    MaterialRequest @relation(fields: [requestId], references: [id])
+  material   Material        @relation(fields: [materialId], references: [id])
+
+  @@index([requestId])
+  @@index([materialId])
+}
+
+// 'Product' se convierte en 'Material' y añadimos stock.
+model Material {
+  id         Int      @id @default(autoincrement())
+  name       String   @unique // El nombre de un material debe ser único
+  stock      Int      // Cantidad actual disponible (variable)
+  totalStock Int      // Cantidad total en inventario (fija)
+  image      String
+  categoryId Int
+  
+  // No tiene sentido que un material tenga precio en este contexto
+  // price      Float
+
+  requests      RequestProduct[]
+  category      Category         @relation(fields: [categoryId], references: [id])
+
+  @@index([categoryId])
+}

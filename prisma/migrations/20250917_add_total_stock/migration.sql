@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE `Material` ADD COLUMN `totalStock` INTEGER NOT NULL DEFAULT 0;
