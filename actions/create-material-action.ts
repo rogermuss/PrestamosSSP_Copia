@@ -15,7 +15,7 @@ export async function createMaterial(prevState: any, formData: FormData) {
         variants: JSON.parse(formData.get('variants') as string || '[]')
     }
 
-    // 2. Validamos usando tu esquema Zod
+
     const result = MaterialSchema.safeParse(data)
 
     if (!result.success) {
@@ -24,7 +24,7 @@ export async function createMaterial(prevState: any, formData: FormData) {
         }
     }
 
-    // 3. Magia de Prisma: Crea el Material y sus Opciones al mismo tiempo
+    // 2. Crea el Material y sus Opciones al mismo tiempo
     await prisma.material.create({
         data: {
             name: result.data.name,
@@ -37,7 +37,7 @@ export async function createMaterial(prevState: any, formData: FormData) {
         }
     })
 
-    // 4. Redirigimos al inventario al terminar
+    // 3. Redirigimos al inventario al terminar
     revalidatePath('/admin/materials')
     redirect('/admin/materials')
 }

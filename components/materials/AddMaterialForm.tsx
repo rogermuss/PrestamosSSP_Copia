@@ -8,12 +8,11 @@ export default function AddMaterialForm({children}: {children : React.ReactNode}
     const router = useRouter()
 
     const handleSubmit = async (formData: FormData) => {
-        // Extraemos los datos nuevos incluyendo descripción y variantes
         const data = {
-            name: formData.get('name'),
-            description: formData.get('description'),
+            name: formData.get('name') || '',
+            description: formData.get('description') || '',
             categoryId: formData.get('categoryId'),
-            image: formData.get('image'),
+            image: formData.get('image') || '',
             variants: JSON.parse(formData.get('variants') as string || '[]')
         }
         

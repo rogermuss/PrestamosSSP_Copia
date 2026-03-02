@@ -1,18 +1,14 @@
-// --- START OF FILE page.tsx ---
-
-import EditMaterialForm from "@/components/materials/EditMaterialForm" // Renombrar componente
-import MaterialForm from "@/components/materials/MaterialForm" // Renombrar componente
+import EditMaterialForm from "@/components/materials/EditMaterialForm" 
+import MaterialForm from "@/components/materials/MaterialForm" 
 import GoBackButton from "@/components/ui/GoBackButton"
 import Heading from "@/components/ui/Heading"
 import { prisma } from "@/src/lib/prisma"
 import { notFound } from "next/navigation"
 
-// La función ahora busca un Material
 async function getMaterialById(id: number) {
     const material = await prisma.material.findUnique({
-        where: {
-            id
-        }
+        where: { id },
+        include: { variants: true } 
     })
     if(!material) {
         notFound()
@@ -22,6 +18,9 @@ async function getMaterialById(id: number) {
 
 export default async function EditMaterialPage({ params }: { params: { id: string } }) {
     const material = await getMaterialById(+params.id)
+    
+    
+    const categories = await prisma.category.findMany()
 
     return (
         <>
@@ -29,10 +28,10 @@ export default async function EditMaterialPage({ params }: { params: { id: strin
 
             <GoBackButton />
 
-            {/* Los formularios ahora manejan materiales */}
             <EditMaterialForm>
                 <MaterialForm 
                     material={material}
+                    categories={categories} 
                 />
             </EditMaterialForm>
         </>
