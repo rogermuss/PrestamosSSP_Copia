@@ -12,4 +12,9 @@ export function getCategorySlug(categoryId: number): string {
     return categorySlugMap[categoryId as keyof typeof categorySlugMap] || 'documentacion-varios';
 }
 
-// Ya no necesitamos getImagePath ya que usaremos directamente los iconos de categoría
+export function getImagePath(imagePath: string) {
+    if(imagePath.startsWith('http')) {
+        return imagePath;
+    }
+    return `/products/${imagePath}.jpg`;
+}

@@ -1,19 +1,19 @@
-// --- START OF FILE page.tsx ---
-
-import AddMaterialForm from "@/components/materials/AddMaterialForm"; // Renombrar componente
-import MaterialForm from "@/components/materials/MaterialForm"; // Renombrar componente
+import AddMaterialForm from "@/components/materials/AddMaterialForm";
+import MaterialForm from "@/components/materials/MaterialForm";
 import Heading from "@/components/ui/Heading";
+import { prisma } from "@/src/lib/prisma";
 
-export default function CreateMaterialPage() {
+export default async function CreateMaterialPage() {
+  // Obtenemos las categorías de la BD para la Combo Box
+  const categories = await prisma.category.findMany()
+
   return (
     <>
       <Heading>Añadir Nuevo Material</Heading>
 
-      {/* Los formularios ahora se encargan de crear materiales */}
       <AddMaterialForm>
-        <MaterialForm />
+        <MaterialForm categories={categories} />
       </AddMaterialForm>
-    
     </>
   )
 }

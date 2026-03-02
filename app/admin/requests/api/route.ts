@@ -1,20 +1,22 @@
-// --- START OF FILE route.ts ---
-
 import { prisma } from "@/src/lib/prisma"
 
 export const dynamic = 'force-dynamic'
 
 export async function GET() {
-    // Cambiamos Order -> MaterialRequest y los nombres de los campos y relaciones
-    const requests = await prisma.materialRequest.findMany({
+    // Las consultas ahora apuntan a las tablas en minúsculas y sus nuevas relaciones (Variantes)
+    const requests = await prisma.materialrequest.findMany({
         where: {
-            isCompleted: false // status -> isCompleted
+            isCompleted: false
         },
         include: {
-            user: true, // Incluir información del usuario
-            requestedProducts: { // orderProducts -> requestedProducts
+            user: true, 
+            requestproduct: { 
                 include: {
-                    material: true // product -> material
+                    variant: {
+                        include: {
+                            material: true
+                        }
+                    }
                 }
             }
         }

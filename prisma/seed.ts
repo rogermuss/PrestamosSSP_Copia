@@ -7,7 +7,7 @@ const prisma = new PrismaClient()
 
 async function main() {
     try {
-        // 1. Crear usuarios de ejemplo
+        // Crea usuarios de ejemplo
         await prisma.user.createMany({
             data: [
                 { email: 'estudiante1@universidad.edu', name: 'Juan Pérez' },
@@ -17,21 +17,18 @@ async function main() {
         })
         console.log('Usuarios creados exitosamente.')
 
-        // 2. Crear las categorías
+        //Crea las categorías
         await prisma.category.createMany({
             data: categories
         })
         console.log('Categorías creadas exitosamente.')
 
-        // 3. Crear los materiales con su variante "Estándar" adaptado al nuevo modelo
         for (const item of materials) {
             await prisma.material.create({
                 data: {
                     name: item.name,
                     image: item.image,
                     categoryId: item.categoryId,
-                    // Dejamos la descripción nula por defecto
-                    // Creamos automáticamente la variante estándar con el stock viejo
                     variants: {
                         create: [
                             {
