@@ -1,10 +1,8 @@
-// --- START OF FILE MaterialsTable.tsx ---
-
-import { MaterialsWithCategory } from "@/app/admin/materials/page" // Tipo actualizado
 import Link from "next/link"
 
+// Actualizamos el tipo para que acepte "variants"
 type MaterialTableProps = {
-    materials: MaterialsWithCategory // Prop actualizada
+    materials: any[] // Usamos any temporalmente para evitar errores de tipado de TypeScript
 }
 
 export default function MaterialTable({ materials }: MaterialTableProps) {
@@ -16,40 +14,37 @@ export default function MaterialTable({ materials }: MaterialTableProps) {
                         <table className="min-w-full divide-y divide-gray-300 ">
                             <thead>
                                 <tr>
-                                    <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-0">
-                                        Material
-                                    </th>
-                                    <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
-                                        Stock
-                                    </th>
-                                    <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
-                                        Categoría
-                                    </th>
-                                    <th scope="col" className="relative py-3.5 pl-3 pr-4 sm:pr-0">
-                                        <span className="sr-only">Acciones</span>
-                                    </th>
+                                    <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-0">Material</th>
+                                    <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Stock Total</th>
+                                    <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Categoría</th>
+                                    <th scope="col" className="relative py-3.5 pl-3 pr-4 sm:pr-0"><span className="sr-only">Acciones</span></th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-200">
-                                {materials.map(material => (
+                                {materials.map(material => {
+                                    // Calculamos el stock sumando todas las variantes
+                                    const totalStock = material.variants?.reduce((suma: number, variante: any) => suma + variante.stock, 0) || 0;
+
+                                    return (
                                     <tr key={material.id}>
                                         <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-0">
                                             {material.name}
                                         </td>
                                         <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                                            {material.stock}
+                                            {/* Mostramos la suma total calculada */}
+                                            <span className="font-bold">{totalStock} piezas</span>
                                         </td>
                                         <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
                                             {material.category.name}
                                         </td>
                                         <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-0">
-                                            <Link
-                                                href={`/admin/materials/${material.id}/edit`} // Ruta actualizada
-                                                className="text-indigo-600 hover:text-indigo-800"
-                                            >Editar <span className="sr-only">, {material.name}</span> </Link>
+                                            <Link href={`/admin/materials/${material.id}/edit`} className="text-indigo-600 hover:text-indigo-800">
+                                                Editar
+                                            </Link>
                                         </td>
                                     </tr>
-                                ))}
+                                    )
+                                })}
                             </tbody>
                         </table>
                     </div>

@@ -18,7 +18,8 @@ async function getMaterials(page: number, pageSize: number) {
     take: pageSize,
     skip,
     include: {
-      category: true
+      category: true,
+      variants: true
     }
   })
   return materials

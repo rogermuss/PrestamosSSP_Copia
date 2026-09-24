@@ -1,5 +1,3 @@
-// archivo: prisma/schema.prisma
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,72 +8,69 @@ datasource db {
   shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
 }
 
-// Modelo de Usuario para simular login con cuenta universitaria
-model User {
-  id        Int        @id @default(autoincrement())
-  email     String     @unique // Email universitario
-  name      String     // Nombre completo del usuario
-  createdAt DateTime   @default(now())
-  
-  // Relación con las solicitudes realizadas por el usuario
-  requests  MaterialRequest[]
+model category {
+  id       Int        @id @default(autoincrement())
+  name     String
+  slug     String
+  material material[]
 }
 
-// El modelo Category sigue siendo útil, sin cambios estructurales.
-model Category {
-  id        Int        @id @default(autoincrement())
-  name      String
-  slug      String
-  materials Material[] // Renombrado de 'products' a 'materials'
+model material {
+  id             Int              @id @default(autoincrement())
+  name           String           @unique(map: "Material_name_key")
+  description    String?
+  image          String
+  categoryId     Int
+  category       category         @relation(fields: [categoryId], references: [id], map: "Material_categoryId_fkey")
+  variants materialvariant[]
+
+  @@index([categoryId], map: "Material_categoryId_idx")
 }
 
-// 'Order' se convierte en 'MaterialRequest' para mayor claridad.
-model MaterialRequest {
-  id                  Int                 @id @default(autoincrement())
-  requesterName       String              // Renombrado de 'name' a 'requesterName'
-  userId              Int                 // ID del usuario que realizó la solicitud
-  totalItems          Int                 // Renombrado de 'total' a 'totalItems'
-  requestedAt         DateTime            @default(now()) // Renombrado de 'date'
-  isCompleted         Boolean             @default(false) // Renombrado de 'status'
-  completedAt         DateTime?           // Renombrado de 'orderReadyAt'
-  
-  // Relación con el usuario que realizó la solicitud
-  user                User                @relation(fields: [userId], references: [id])
-  
-  // Relación con los productos/materiales de la solicitud
-  requestedProducts   RequestProduct[]
-  
-  @@index([userId])
-}
-
-// 'OrderProduct' se convierte en 'RequestProduct'
-model RequestProduct {
-  id         Int      @id @default(autoincrement())
-  requestId  Int
+model materialvariant {
+  id Int  @id @default(autoincrement())
   materialId Int
-  quantity   Int
-
-  request    MaterialRequest @relation(fields: [requestId], references: [id])
-  material   Material        @relation(fields: [materialId], references: [id])
-
-  @@index([requestId])
+  specification String 
+  stock Int
+  totalStock Int
+  
+  material material  @relation(fields: [materialId], references: [id], onDelete: Cascade)
+  requestproduct requestproduct[]
+  
   @@index([materialId])
 }
 
-// 'Product' se convierte en 'Material' y añadimos stock.
-model Material {
-  id         Int      @id @default(autoincrement())
-  name       String   @unique // El nombre de un material debe ser único
-  stock      Int      // Cantidad actual disponible (variable)
-  totalStock Int      // Cantidad total en inventario (fija)
-  image      String
-  categoryId Int
+model materialrequest {
+  id             Int              @id @default(autoincrement())
+  requesterName  String
+  totalItems     Int
+  requestedAt    DateTime         @default(now())
+  isCompleted    Boolean          @default(false)
+  completedAt    DateTime?
+  userId         Int              @default(1)
+  user           user             @relation(fields: [userId], references: [id], map: "MaterialRequest_userId_fkey")
+  requestproduct requestproduct[]
+
+  @@index([userId], map: "MaterialRequest_userId_idx")
+}
+
+model requestproduct {
+  id              Int             @id @default(autoincrement())
+  requestId       Int
+  variantId       Int
+  quantity        Int
+
+  materialrequest materialrequest @relation(fields: [requestId], references: [id], map: "RequestProduct_requestId_fkey")
+  variant         materialvariant @relation(fields: [variantId], references: [id])
   
-  // No tiene sentido que un material tenga precio en este contexto
-  // price      Float
+  @@index([variantId], map: "RequestProduct_materialId_idx")
+  @@index([requestId], map: "RequestProduct_requestId_idx")
+}
 
-  requests      RequestProduct[]
-  category      Category         @relation(fields: [categoryId], references: [id])
-
-  @@index([categoryId])
+model user {
+  id              Int               @id @default(autoincrement())
+  email           String            @unique(map: "User_email_key")
+  name            String
+  createdAt       DateTime          @default(now())
+  materialrequest materialrequest[]
 }

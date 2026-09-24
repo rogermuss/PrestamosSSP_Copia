@@ -1,60 +1,44 @@
-// --- START OF FILE complete-request-action.ts ---
-
 "use server"
-import { revalidatePath } from 'next/cache'
 import { prisma } from "@/src/lib/prisma"
-import { RequestIdSchema } from "@/src/schema" // 1. Usará un nuevo schema para validar el ID
+import { revalidatePath } from "next/cache"
 
 export async function completeRequest(formData: FormData) {
-    const data = {
-        // 2. El campo del formulario ahora se llama 'request_id'
-        requestId: formData.get('request_id') 
-    }
+    const requestId = formData.get('request_id')
 
-    const result = RequestIdSchema.safeParse(data)
+    try {
+        // 1. Buscamos el pedido con sus variantes conectadas
+        const request = await prisma.materialrequest.findUnique({
+            where: { id: Number(requestId) },
+            include: { requestproduct: true }
+        })
 
-    if (result.success) {
-        try {
-            // Usamos una transacción para actualizar la solicitud y el stock al mismo tiempo
-            await prisma.$transaction(async (tx) => {
-                // Primero, obtenemos la solicitud con sus productos
-                const request = await tx.materialRequest.findUnique({
-                    where: { id: result.data.requestId },
-                    include: {
-                        requestedProducts: true
+        if (!request) return
+
+        // 2. Descontamos el stock de CADA VARIANTE solicitada
+        for (const item of request.requestproduct) {
+            await prisma.materialvariant.update({
+                where: { id: item.variantId }, 
+                data: {
+                    stock: {
+                        decrement: item.quantity 
                     }
-                })
-
-                if (!request) {
-                    throw new Error('Solicitud no encontrada')
                 }
-
-                // Segundo, actualizamos el stock de cada material
-                for (const item of request.requestedProducts) {
-                    await tx.material.update({
-                        where: { id: item.materialId },
-                        data: {
-                            stock: {
-                                decrement: item.quantity
-                            }
-                        }
-                    })
-                }
-
-                // Tercero, marcamos la solicitud como completada
-                await tx.materialRequest.update({
-                    where: { id: result.data.requestId },
-                    data: {
-                        isCompleted: true,
-                        completedAt: new Date()
-                    }
-                })
             })
-
-            // Revalida las rutas para que se actualice la UI
-            revalidatePath('/admin/requests')
-        } catch (error) {
-            console.log(error)
         }
+
+        // 3. Marcamos el pedido como completado en la base de datos
+        await prisma.materialrequest.update({
+            where: { id: Number(requestId) },
+            data: {
+                isCompleted: true,
+                completedAt: new Date()
+            }
+        })
+
+        // 4. Refrescamos la pantalla para que desaparezca
+        revalidatePath('/admin/requests')
+
+    } catch (error) {
+        console.log(error)
     }
 }

@@ -11,6 +11,9 @@ async function getMaterials(category: string) {
       category: {
         slug: category
       }
+    },
+    include: {
+      variants: true
     }
   })
   return materials

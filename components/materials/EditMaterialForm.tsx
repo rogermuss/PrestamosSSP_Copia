@@ -1,7 +1,5 @@
-// --- START OF FILE EditMaterialForm.tsx ---
-
 "use client"
-import { updateMaterial } from "@/actions/update-material-action" // Deberás crear/renombrar esta action
+import { updateMaterial } from "@/actions/update-material-action" 
 import { MaterialSchema } from "@/src/schema"
 import { useRouter } from "next/navigation"
 import { toast } from "react-toastify"
@@ -14,10 +12,11 @@ export default function EditMaterialForm({children}: {children : React.ReactNode
 
     const handleSubmit = async (formData: FormData) => {
         const data = {
-            name: formData.get('name'),
-            stock: formData.get('stock'), // Se edita el stock
+            name: formData.get('name') || '',
+            description: formData.get('description') || '',
             categoryId: formData.get('categoryId'),
-            image: formData.get('image')
+            image: formData.get('image') || '',
+            variants: JSON.parse(formData.get('variants') as string || '[]')
         }
         
         const result = MaterialSchema.safeParse(data)
@@ -37,15 +36,12 @@ export default function EditMaterialForm({children}: {children : React.ReactNode
         }
 
         toast.success('Material Actualizado Correctamente')
-        router.push('/admin/materials') // Redirige a la página de materiales
+        router.push('/admin/materials') 
     }
 
     return (
         <div className="bg-white mt-10 px-5 py-10 rounded-md shadow-md max-w-3xl mx-auto">
-            <form
-                className="space-y-5"
-                action={handleSubmit}
-            >
+            <form className="space-y-5" action={handleSubmit}>
                 {children}
                 <input
                     type="submit"

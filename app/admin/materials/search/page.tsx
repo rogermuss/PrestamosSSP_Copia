@@ -5,17 +5,16 @@ import MaterialTable from "@/components/materials/MaterialsTable";
 import Heading from "@/components/ui/Heading";
 import { prisma } from "@/src/lib/prisma";
 
-// La función ahora busca en el modelo Material
 async function searchMaterials(searchTerm: string) {
     const materials = await prisma.material.findMany({
         where: {
             name: {
                 contains: searchTerm
-                // La línea "mode: 'insensitive'" ha sido eliminada.
             }
         },
         include: {
-            category: true
+            category: true,
+            variants: true
         }
     })
     return materials
